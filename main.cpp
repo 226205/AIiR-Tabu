@@ -78,7 +78,7 @@ void TabuSearch()
 
     int tempCost = INT_MAX;
     int bestResult = INT_MAX;
-    int temp = 0;
+    int tempV, temp = 0;
 
     bool* cityB = new bool[cityamount + 1];            //stworzenie tablicy mowiacej czy dana liczba juz wystapila w sekwencji
     cityB[0] = cityB[cityamount] = true;              //podpisanie pierwszego i ostatniego elementu jako juz wykonanego
@@ -95,18 +95,38 @@ void TabuSearch()
         }
         else
         {
-
+            tempV = INT_MAX;
+            for(int j = 1; j < cityamount; j++)
+                if(cityB[j] == false && distances[tempBestPath[i-1]][j] < tempV){
+                    tempV = distances[tempBestPath[i-1]][j];
+                    temp = j;
+                }
+            cityB[temp] = true;
+            tempBestPath[i] = temp;
         }
+    }
+
+    tempBestCost = bestCost = 0;
+    for(int i = 0; i < cityamount; i++)                 // obliczanie odleglosci nowej sciezki
+        tempBestCost += distances[tempBestPath[i]][tempBestPath[i + 1]];
+
+    bestCost = tempBestCost;                            // podpisanie jako najlepsza znaleziona
+    for (int i = 0; i < cityamount + 1; i++)
+        bestPath[i] = tempBestPath[i];
 
 
-    delete[] cityB;
 
+    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu
+    for(int i = 0; i < cityamount; i++)
+        std::cout << bestPath[i] << " -> ";
+    std::cout << bestPath[cityamount];
+    std::cout<<"\nJej calkowity dystans wynosi: " << bestCost;
 
     for(int i = 0; i < cityamount; i++)
         delete[] tabuList[i];
     delete[] tabuList;
     delete[] tempBestPath;
-	  delete[] bestPath;
-    delete[] tempPath;
+	delete[] bestPath;
+	delete[] tempPath;
+    delete[] cityB;
 }
-
