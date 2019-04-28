@@ -15,9 +15,10 @@ void filewrite(int*, int);
 void writetab(int**);
 void TabuSearch();
 
-int  main()
+int  main(int argc,char  *argv[])
 {
     srand(time(NULL));
+    std::cout << argv[1];
     if(fileread() == 0)
         std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE!!!";
     else
