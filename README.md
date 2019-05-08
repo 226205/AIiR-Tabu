@@ -1,6 +1,5 @@
-Program realizowany w ramach zaliczenia przedmiotu: Aplikacje Internetowe i Rozproszone
-
-Rozwiązywanie TSP za pomocą algorytmu Tabu Search przygotowane do podzielenia na osobno działające węzły
+Program realizowany w ramach zaliczenia przedmiotu: Aplikacje Internetowe i Rozproszone.
+Rozwiązywanie TSP za pomocą algorytmu Tabu Search przygotowane do podzielenia na osobno działające węzły.
 
 
 Program uruchamiamy podając parametry startowe:
