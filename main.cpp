@@ -11,7 +11,7 @@ int **distances;
 
 bool fileread(char*);
 bool result(int, char**);
-void filewrite(int*, int, char**);
+void filewrite(int*, int, char**, double);
 void writetab(int**);
 void TabuSearch(int, char**);
 
@@ -71,11 +71,11 @@ bool result(int cost, char  *argv[])         // funkcja do zapisywania danych do
     return 1;
 }
 
-void filewrite(int* sequence, int cost, char  *argv[])
+void filewrite(int* sequence, int cost, char  *argv[], double czas)
 {
     std::ofstream ofs;
     ofs.open(argv[4], std::ofstream::out | std::ofstream::trunc);
-    ofs<<argv[3]<<" "<<cost<<" ";
+    ofs<<argv[3]<<" "<<czas/CLOCKS_PER_SEC<<" "<<cost<<" ";
     for(int i = 0; i < cityamount; i++)
         ofs<<sequence[i]<<"->";
     ofs<<sequence[cityamount];
@@ -96,6 +96,7 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
 
 void TabuSearch(int argc,char  *argv[])
 {
+    clock_t begin = clock();
     int iterationWoImprovement, maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
     int tabuSize;      // ilosc przejsc zapamietanych w tabu
     if(atoi(argv[1]) > (cityamount-2)*(cityamount-2) / 2)
@@ -256,7 +257,11 @@ void TabuSearch(int argc,char  *argv[])
 
     }while(iterationWoImprovement < maxIterationWoImprovement);
 
-    std::cout << "\n\n" << iteration << "  " << bestCost << "\n";
+    std::clock_t end = clock();
+    double czas = end - begin;
+    std::cout<<"\nCzas: " << czas / CLOCKS_PER_SEC;
+
+    std::cout << "\n" << iteration << "  " << bestCost << "\n";
 //    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
     for(int i = 0; i < cityamount; i++)
         std::cout << bestPath[i] << " -> ";
@@ -265,7 +270,7 @@ void TabuSearch(int argc,char  *argv[])
 
     if(result(bestCost, argv) == 1){
         std::cout<<"\nPrzekazujemy wynik";
-        filewrite(bestPath, bestCost, argv);
+        filewrite(bestPath, bestCost, argv, czas);
     }
 
     for(int i = 0; i < cityamount; i++)
