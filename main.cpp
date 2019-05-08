@@ -126,13 +126,22 @@ void TabuSearch(int argc,char  *argv[])
     for(int i = 1; i < cityamount; i++)                 //podpisanie pozostalych jako niewykonanych
         cityB[i] = false;
 
-
+    int amOfFailed = 0;
     for(int i = 1; i < cityamount; ++i)                // tworzenie pierwszej sekwencji, ustawienie pierwszego miasta jako poczatkowego i koncowego zostalo juz wykonane dlatego pomijamy
     {
-        if(i < argc - 4) // poczatkowa sekwencja miast zadeklarowana na wejsciu
+        if(i < argc - amOfFailed - 4) // poczatkowa sekwencja miast zadeklarowana na wejsciu // -4 bo na wejsciu jest 5 arg zanim zaczniemy sekwencje, a iteracja zaczynana od 1
         {
-            tempBestPath[i] = atoi(argv[i+4]);
-            cityB[atoi(argv[i+4])] = true;
+            if(atoi(argv[i+amOfFailed+4]) <= 0 || atoi(argv[i+amOfFailed+4]) >= cityamount || cityB[atoi(argv[i+amOfFailed+4])] == true) // || isdigit(argv[i+amOfFailed+4])
+            {
+                std::cout << "\nPodano zly skladnik sekwencji, miasto: " << argv[i+amOfFailed+4] << " zostaje pominiete w sekwencji!";
+                amOfFailed++;
+                i--;
+            }
+            else
+            {
+                tempBestPath[i] = atoi(argv[i+amOfFailed+4]);
+                cityB[atoi(argv[i+amOfFailed+4])] = true;
+            }
         }
         else
         {
