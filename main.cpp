@@ -75,7 +75,7 @@ void filewrite(int* sequence, int cost, char  *argv[], double czas)
 {
     std::ofstream ofs;
     ofs.open(argv[4], std::ofstream::out | std::ofstream::trunc);
-    ofs<<argv[3]<<" "<<czas/CLOCKS_PER_SEC<<" "<<cost<<" ";
+    ofs<<argv[3]<<" "<<cost<<" "<<czas/CLOCKS_PER_SEC<<" ";
     for(int i = 0; i < cityamount; i++)
         ofs<<sequence[i]<<"->";
     ofs<<sequence[cityamount];
@@ -278,6 +278,6 @@ void TabuSearch(int argc,char  *argv[])
     delete[] tabuList;
     delete[] tempBestPath;
 	delete[] bestPath;
-	delete[] tempPath;
+    delete[] tempPath;
     delete[] cityB;
 }
