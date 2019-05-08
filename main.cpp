@@ -5,31 +5,32 @@
 #include <ctime>
 
 
-int cityamount =3;
+int cityamount;
 int **distances;
 
 
-bool fileread();
-bool result(int);
-void filewrite(int*, int);
+bool fileread(char*);
+bool result(int, char**);
+void filewrite(int*, int, char**);
 void writetab(int**);
-void TabuSearch();
+void TabuSearch(int, char**);
 
 int  main(int argc,char  *argv[])
 {
+    if(argc < 5)
+        { std::cout << "\nPodano zle arg wejsciowe"; return 0; }
     srand(time(NULL));
-    std::cout << argv[1];
-    if(fileread() == 0)
-        std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE!!!";
+    if(fileread(argv[3]) == 0 || atoi(argv[1]) > (cityamount-2)*(cityamount-2))
+        std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";
     else
-        TabuSearch();
+        TabuSearch(argc, argv);
 }
 
 
 
-bool fileread()         // funkcja do odczytywania danych z pliku
+bool fileread(char *filen)         // funkcja do odczytywania danych z pliku
 {
-    std::string filename = "ftv47.atsp";
+    std::string filename = filen;
     std::fstream plik;
     plik.open(filename,std::ios::in);
     if(plik.good())                         // sprawdzenie poprawnosci wczytania pliku, w razie niepowodzenia zwracamy blad
@@ -48,11 +49,11 @@ bool fileread()         // funkcja do odczytywania danych z pliku
     return 0;
 }
 
-bool result(int cost)         // funkcja do zapisywania danych do pliku
+bool result(int cost, char  *argv[])         // funkcja do zapisywania danych do pliku
 {
     int oldCost;
-    std::string oldName, currentName = "ftv47.atsp";
-    std::string filename = "wynik.txt";
+    std::string oldName, currentName = argv[3];
+    std::string filename = argv[4];
     std::fstream plik;
     plik.open(filename,std::ios::in);
     if(plik.good())                         // sprawdzenie poprawnosci wczytania pliku, w razie niepowodzenia zwracamy blad
@@ -70,18 +71,16 @@ bool result(int cost)         // funkcja do zapisywania danych do pliku
     return 1;
 }
 
-void filewrite(int* sequence, int cost)
+void filewrite(int* sequence, int cost, char  *argv[])
 {
     std::ofstream ofs;
-    ofs.open("wynik.txt", std::ofstream::out | std::ofstream::trunc);
-    ofs<<"ftv47.atsp"<<" "<<cost<<" ";
+    ofs.open(argv[4], std::ofstream::out | std::ofstream::trunc);
+    ofs<<argv[3]<<" "<<cost<<" ";
     for(int i = 0; i < cityamount; i++)
         ofs<<sequence[i]<<"->";
     ofs<<sequence[cityamount];
     ofs.close();
 }
-
-
 
 void writetab(int** cities)                 // wypisywanie aktualnej macierzy przejsc miedzy miastami
 {
@@ -95,11 +94,11 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
     }
 }
 
-void TabuSearch()
+void TabuSearch(int argc,char  *argv[])
 {
-    int iterationWoImprovement, maxIterationWoImprovement = 10;    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
-    int tabuSize = cityamount;      // ilosc przejsc zapamietanych w tabu
-    int iteration = 0;      // iterator trzymajacy informacje o tym ile razy program wykonal algorytm
+    int iterationWoImprovement, maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
+    int tabuSize = atoi(argv[1]);      // ilosc przejsc zapamietanych w tabu
+    int iteration = 0;              // iterator trzymajacy informacje o tym ile razy program wykonal algorytm
 
     int** tabuList = new int*[cityamount];             // inicjalizacja tablicy Tabu w rozmiarze x*x
     for(int i = 1; i < cityamount; i++)
@@ -130,10 +129,10 @@ void TabuSearch()
 
     for(int i = 1; i < cityamount; ++i)                // tworzenie pierwszej sekwencji, ustawienie pierwszego miasta jako poczatkowego i koncowego zostalo juz wykonane dlatego pomijamy
     {
-        if(i < 2) // poczatkowa sekwencja miast (i + nr_pierwszego_arg_w_argv - 1) ##############################################################################################
+        if(i < argc - 4) // poczatkowa sekwencja miast zadeklarowana na wejsciu
         {
-            tempBestPath[i] = 3;  // 3 -> atoi(argv[i+x])
-            cityB[3] = true;    // 3 -> atoi(argv[i+x])
+            tempBestPath[i] = atoi(argv[i+4]);
+            cityB[atoi(argv[i+4])] = true;
         }
         else
         {
@@ -147,6 +146,11 @@ void TabuSearch()
             tempBestPath[i] = temp;
         }
     }
+
+    std::cout<<"\n\nStworzona sekwencja miast to:\n";           // wypisanie wyników procesu na ekran
+    for(int i = 0; i < cityamount; i++)
+        std::cout << tempBestPath[i] << " -> ";
+    std::cout << tempBestPath[cityamount] << "\n\n";
 
     tempBestCost = bestCost = 0;
     for(int i = 0; i < cityamount; i++)                 // obliczanie odleglosci nowej sciezki
@@ -237,18 +241,21 @@ void TabuSearch()
         else
             iterationWoImprovement++;
 
+
+//        std::cout<< "\n" << tempPath[0] << " " << tempPath[1];
+
     }while(iterationWoImprovement < maxIterationWoImprovement);
 
-
+    std::cout << iteration;
 //    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
 //    for(int i = 0; i < cityamount; i++)
 //        std::cout << bestPath[i] << " -> ";
 //    std::cout << bestPath[cityamount];
 //    std::cout<<"\nJej calkowity dystans wynosi: " << bestCost;
 
-    if(result(bestCost) == 1){
+    if(result(bestCost, argv) == 1){
         std::cout<<"\nPrzekazujemy wynik";
-        filewrite(bestPath, bestCost);
+        filewrite(bestPath, bestCost, argv);
     }
 
     for(int i = 0; i < cityamount; i++)
@@ -259,5 +266,3 @@ void TabuSearch()
 	delete[] tempPath;
     delete[] cityB;
 }
-
-
