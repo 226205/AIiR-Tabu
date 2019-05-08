@@ -20,7 +20,7 @@ int  main(int argc,char  *argv[])
     if(argc < 5)
         { std::cout << "\nPodano zle arg wejsciowe"; return 0; }
     srand(time(NULL));
-    if(fileread(argv[3]) == 0 || atoi(argv[1]) > (cityamount-2)*(cityamount-2))
+    if(fileread(argv[3]) == 0)
         std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";
     else
         TabuSearch(argc, argv);
@@ -97,7 +97,10 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
 void TabuSearch(int argc,char  *argv[])
 {
     int iterationWoImprovement, maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
-    int tabuSize = atoi(argv[1]);      // ilosc przejsc zapamietanych w tabu
+    int tabuSize;      // ilosc przejsc zapamietanych w tabu
+    if(atoi(argv[1]) > (cityamount-2)*(cityamount-2) / 2)
+        { tabuSize = (cityamount-2)*(cityamount-2)/2; std::cout << "\nWielkosc tablicy Tabu poza zakresem, zmieniono ja na maksymalna dopuszczalna: " << tabuSize; }
+    else tabuSize = atoi(argv[1]);
     int iteration = 0;              // iterator trzymajacy informacje o tym ile razy program wykonal algorytm
 
     int** tabuList = new int*[cityamount];             // inicjalizacja tablicy Tabu w rozmiarze x*x
@@ -253,11 +256,11 @@ void TabuSearch(int argc,char  *argv[])
 
     }while(iterationWoImprovement < maxIterationWoImprovement);
 
-    std::cout << iteration;
+    std::cout << "\n\n" << iteration << "  " << bestCost << "\n";
 //    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
-//    for(int i = 0; i < cityamount; i++)
-//        std::cout << bestPath[i] << " -> ";
-//    std::cout << bestPath[cityamount];
+    for(int i = 0; i < cityamount; i++)
+        std::cout << bestPath[i] << " -> ";
+    std::cout << bestPath[cityamount];
 //    std::cout<<"\nJej calkowity dystans wynosi: " << bestCost;
 
     if(result(bestCost, argv) == 1){
