@@ -8,25 +8,60 @@
 int cityamount;
 int **distances;
 
-
+void randomise(int, char**);
 bool fileread(char*);
 bool result(int, char**);
 void filewrite(int*, int, char**, double);
 void writetab(int**);
-void TabuSearch(int, char**);
+void TabuSearch(int, char**, int, int*);
 
-int  main(int argc,char  *argv[])
+int  main(int argc, char  *argv[])
 {
-    if(argc < 5)
+    if(argc != 7)
         { std::cout << "\nPodano zle arg wejsciowe"; return 0; }
     srand(time(NULL));
     if(fileread(argv[3]) == 0)
         std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";
     else
-        TabuSearch(argc, argv);
+        randomise(argc, argv);
 }
 
 
+void randomise(int argc,char  *argv[])
+{
+    int diversity = 1;              // laczna ilosc mozliwych sekwencji dla danego poziomu wglebienia
+    int diversityLevel = 0;         // poziom wglebienia - ilosc miast
+    for(int i = cityamount - 1; diversity * i < atoi(argv[5]); i--)
+    {
+        diversity *= i;
+        diversityLevel++;
+    }
+    randPath = new int[diversityLevel];
+
+    int seqVariations = atoi(argv[5]) / diversity;      // ilosc wariacji dla danej sekwencji
+    int seqVariationsAdd = atoi(argv[5]) % diversity;   // ilosc sekwencji z jedna wariacja wiecej
+
+    int seqWidth = atoi(argv[5]) / atoi(argv[7]);
+
+    int seqStart = seqWidth * (atoi(argv[6])-1); // numer poczatkowej sekwencji
+    if((atoi(argv[5]) % atoi(argv[7]) < atoi(argv[6]))
+        seqStart += (atoi(argv[5]) % atoi(argv[7]));
+    else
+        seqStart += (atoi(argv[6]) - 1);
+
+
+    int seqFinish = seqStart + seqWidth;
+    if(atoi(argv[5]) % atoi(argv[7]) >= atoi(argv[6])) seqFinish++;
+
+
+
+
+
+//    TabuSearch(argc, argv, randPathLength, randPath);
+
+
+    delete[] randPath;
+}
 
 bool fileread(char *filen)         // funkcja do odczytywania danych z pliku
 {
@@ -62,7 +97,7 @@ bool result(int cost, char  *argv[])         // funkcja do zapisywania danych do
         plik>>oldCost;
         plik.close();
         if(oldCost > cost || oldName.compare(currentName)){
-            std::cout << "\nsprawdzam";
+            //std::cout << "\nsprawdzam";
             return 1;
         }
         return 0;
@@ -75,7 +110,7 @@ void filewrite(int* sequence, int cost, char  *argv[], double czas)
 {
     std::ofstream ofs;
     ofs.open(argv[4], std::ofstream::out | std::ofstream::trunc);
-    ofs<<argv[3]<<" "<<cost<<" "<<czas/CLOCKS_PER_SEC<<" ";
+    ofs<<argv[3]<<" "<<cost/*<<" "<<czas/CLOCKS_PER_SEC<<" "*/;
     for(int i = 0; i < cityamount; i++)
         ofs<<sequence[i]<<"->";
     ofs<<sequence[cityamount];
@@ -94,13 +129,13 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
     }
 }
 
-void TabuSearch(int argc,char  *argv[])
+void TabuSearch(int argc,char  *argv[], int randPathLength, int* randPath)
 {
-    clock_t begin = clock();
+    //clock_t begin = clock();
     int iterationWoImprovement, maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
     int tabuSize;      // ilosc przejsc zapamietanych w tabu
     if(atoi(argv[1]) > (cityamount-2)*(cityamount-2) / 2)
-        { tabuSize = (cityamount-2)*(cityamount-2)/2; std::cout << "\nWielkosc tablicy Tabu poza zakresem, zmieniono ja na maksymalna dopuszczalna: " << tabuSize; }
+        { tabuSize = (cityamount-2)*(cityamount-2)/2; /*std::cout << "\nWielkosc tablicy Tabu poza zakresem, zmieniono ja na maksymalna dopuszczalna: " << tabuSize; */}
     else tabuSize = atoi(argv[1]);
     int iteration = 0;              // iterator trzymajacy informacje o tym ile razy program wykonal algorytm
 
@@ -130,24 +165,14 @@ void TabuSearch(int argc,char  *argv[])
     for(int i = 1; i < cityamount; i++)                 //podpisanie pozostalych jako niewykonanych
         cityB[i] = false;
 
-    int amOfFailed = 0;
     for(int i = 1; i < cityamount; ++i)                // tworzenie pierwszej sekwencji, ustawienie pierwszego miasta jako poczatkowego i koncowego zostalo juz wykonane dlatego pomijamy
     {
-        if(i < argc - amOfFailed - 4) // poczatkowa sekwencja miast zadeklarowana na wejsciu // -4 bo na wejsciu jest 5 arg zanim zaczniemy sekwencje, a iteracja zaczynana od 1
+        if(i < randPathLength) // poczatkowa sekwencja miast zadeklarowana na wejsciu
         {
-            if(atoi(argv[i+amOfFailed+4]) <= 0 || atoi(argv[i+amOfFailed+4]) >= cityamount || cityB[atoi(argv[i+amOfFailed+4])] == true) // || isdigit(argv[i+amOfFailed+4])
-            {
-                std::cout << "\nPodano zly skladnik sekwencji, miasto: " << argv[i+amOfFailed+4] << " zostaje pominiete w sekwencji!";
-                amOfFailed++;
-                i--;
-            }
-            else
-            {
-                tempBestPath[i] = atoi(argv[i+amOfFailed+4]);
-                cityB[atoi(argv[i+amOfFailed+4])] = true;
-            }
+            tempBestPath[i] = randPath[i-1];
+            cityB[randPath[i-1]] = true;
         }
-        else
+        else    //GreedyAlg
         {
             tempV = INT_MAX;
             for(int j = 1; j < cityamount; j++)
@@ -159,12 +184,12 @@ void TabuSearch(int argc,char  *argv[])
             tempBestPath[i] = temp;
         }
     }
-
+/*
     std::cout<<"\n\nStworzona sekwencja miast to:\n";           // wypisanie wynikow procesu na ekran
     for(int i = 0; i < cityamount; i++)
         std::cout << tempBestPath[i] << " -> ";
     std::cout << tempBestPath[cityamount] << "\n\n";
-
+*/
     tempBestCost = bestCost = 0;
     for(int i = 0; i < cityamount; i++)                 // obliczanie odleglosci nowej sciezki
         tempBestCost += distances[tempBestPath[i]][tempBestPath[i + 1]];
@@ -257,19 +282,19 @@ void TabuSearch(int argc,char  *argv[])
 
     }while(iterationWoImprovement < maxIterationWoImprovement);
 
-    std::clock_t end = clock();
-    double czas = end - begin;
-    std::cout<<"\nCzas: " << czas / CLOCKS_PER_SEC;
-
+    //std::clock_t end = clock();
+    //double czas = end - begin;
+    //std::cout<<"\nCzas: " << czas / CLOCKS_PER_SEC;
+/*
     std::cout << "\n" << iteration << "  " << bestCost << "\n";
-//    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
+    //    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
     for(int i = 0; i < cityamount; i++)
         std::cout << bestPath[i] << " -> ";
     std::cout << bestPath[cityamount];
 //    std::cout<<"\nJej calkowity dystans wynosi: " << bestCost;
-
+*/
     if(result(bestCost, argv) == 1){
-        std::cout<<"\nPrzekazujemy wynik";
+//        std::cout<<"\nPrzekazujemy wynik";
         filewrite(bestPath, bestCost, argv, czas);
     }
 
