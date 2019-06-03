@@ -4,6 +4,6 @@ Rozwiązywanie TSP za pomocą algorytmu Tabu Search przygotowane do podzielenia 
 
 Program uruchamiamy podając parametry startowe:
 
-długość_tabu, ilość_iteracji_bez_poprawy_wyniku, nazwa_pliku_z_macierzą_danych_wdg_wzoru, nazwa_istniejacego_pliku_wynikowego, całkowita_ilość_generowalnych_wyrazów_początkowych, numer_wywołania(liczone od zera), ilość_wszystkich_wywołań
+długość_tabu, ilość_iteracji_bez_poprawy_wyniku, nazwa_pliku_z_macierzą_danych_wdg_wzoru, nazwa_istniejacego_pliku_wynikowego, całkowita_ilość_generowalnych_wyrazów_początkowych, numer_wywołania(liczone od jedynki do wartości max), ilość_wszystkich_wywołań
 
 np: 30 20 ftv47.atsp wynik.txt 20000 5 30
