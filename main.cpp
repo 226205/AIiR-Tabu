@@ -3,7 +3,7 @@
 #include <cmath>
 #include <math.h>
 #include <ctime>
-
+#include <limits>
 
 int cityamount;
 int **distances;
@@ -227,8 +227,8 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 
             int* tempPath = new int [2];                    // miasta aktualnie badanego sasiedztwa
 
-            int bestResult = INT_MAX;
-            int tempCost = INT_MAX;
+            int bestResult = std::numeric_limits<int>::max();
+            int tempCost = std::numeric_limits<int>::max();
             int tempV, temp = 0;
 
             bool* cityB = new bool[cityamount + 1];            //stworzenie tablicy mowiacej czy dana liczba juz wystapila w sekwencji
