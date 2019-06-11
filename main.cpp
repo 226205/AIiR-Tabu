@@ -17,13 +17,13 @@ void TabuSearch(int, char**/*, int, int**/);
 
 int  main(int argc, char  *argv[])
 {
-    if(argc != 7)
+    if(argc != 8)
         { std::cout << "\nPodano zle arg wejsciowe"; return 0; }
     srand(time(NULL));
     if(fileread(argv[3]) == 0)
         std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";
     else
-        randomise(argc, argv);
+        TabuSearch(argc, argv);
 }
 
 
@@ -110,7 +110,7 @@ void filewrite(int* sequence, int cost, char  *argv[], double czas)
 {
     std::ofstream ofs;
     ofs.open(argv[4], std::ofstream::out | std::ofstream::trunc);
-    ofs<<argv[3]<<" "<<cost/*<<" "<<czas/CLOCKS_PER_SEC<<" "*/;
+    ofs<<argv[3]<<" "<<cost<<" "/*<<czas/CLOCKS_PER_SEC<<" "*/;
     for(int i = 0; i < cityamount; i++)
         ofs<<sequence[i]<<"->";
     ofs<<sequence[cityamount];
@@ -131,6 +131,17 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
 
 void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 {
+    int** tabuList = new int*[cityamount];             // inicjalizacja tablicy Tabu w rozmiarze x*x
+    for(int i = 1; i < cityamount; i++)
+        tabuList[i] = new int[cityamount];
+
+    int* bestPath = new int[cityamount + 1];      //sciezka i waga optymalnego rozwiazania
+    int* tempBestPath = new int[cityamount + 1];  //sciezka i waga optymalnego rozwiazania tymczasowego
+    int* tempPath = new int [2];                    // miasta aktualnie badanego sasiedztwa
+    bool* cityB = new bool[cityamount + 1];            //stworzenie tablicy mowiacej czy dana liczba juz wystapila w sekwencji
+
+
+
     int diversity = 1;              // laczna ilosc mozliwych sekwencji dla danego poziomu wglebienia
     int diversityLevel = 0;         // poziom wglebienia - ilosc miast
     for(int i = cityamount - 1; diversity * i < atoi(argv[5]); i--)
@@ -138,15 +149,16 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         diversity *= i;
         diversityLevel++;
     }
-    randPath = new int[diversityLevel + 1];
+    int* randPath = new int[diversityLevel + 1];
 
-    int seqVariations = atoi(argv[5]) / diversity;      // ilosc wariacji dla danej sekwencji
-    int seqVariationsAdd = atoi(argv[5]) % diversity;   // ilosc sekwencji z jedna wariacja wiecej
+    int seqVariations = atoi(argv[5]) / diversity;      // ilosc wariacji ostatniego poziomu wglebienia dla danej sekwencji
+    int seqVariationsAdd = atoi(argv[5]) % diversity;   // ilosc wariacji z jedna sekwencja wiecej
 
     int seqWidth = atoi(argv[5]) / atoi(argv[7]);
+    int seqWidthAdd = atoi(argv[5]) % atoi(argv[7]);
 
     int seqStart = seqWidth * (atoi(argv[6])-1); // numer poczatkowej sekwencji
-    if((atoi(argv[5]) % atoi(argv[7]) < atoi(argv[6]))
+    if(atoi(argv[5]) % atoi(argv[7]) < atoi(argv[6]))
         seqStart += (atoi(argv[5]) % atoi(argv[7]));
     else
         seqStart += (atoi(argv[6]) - 1);
@@ -155,97 +167,120 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
     int seqFinish = seqStart + seqWidth;        // numer prawdopodobnego poczatku nastepnej sekwencji
     if(atoi(argv[5]) % atoi(argv[7]) >= atoi(argv[6])) seqFinish++;
 
-    if((seqVariations+1) * seqVariationsAdd >= seqStart)
+    std::cout << "s: " << seqStart << " f: " << seqFinish;
+    if((seqWidth+1) * seqWidthAdd >= seqStart) // ustawianie prawdziwego poczatku sekwencji
     {
-        if(seqStart%(seqVariations+1) != 0)
-            seqStart = (seqVariations+1) * ((seqStart/(seqVariations+1)) +1);
+        if(seqStart%(seqWidth+1) != 0) { std::cout << seqStart << " " << seqWidth;
+            seqStart = (seqWidth+1) * ((seqStart/(seqWidth+1)) +1);}
     }
     else
     {
-        seqStart -= ((seqVariations+1) * seqVariationsAdd);
-        seqStart = (seqStart/seqVariations) * (seqVariations + 1);
-        seqStart += ((seqVariations+1) * seqVariationsAdd);
+        seqStart -= ((seqWidth+1) * seqWidthAdd);
+        seqStart = (seqStart/seqWidth) * (seqWidth + 1);
+        seqStart += ((seqWidth+1) * seqWidthAdd);
     }
 
-    if((seqVariations+1) * seqVariationsAdd >= seqFinish)
+    if((seqWidth+1) * seqWidthAdd >= seqFinish) // ustawianie prawdziwego konca sekwencji
     {
-        if(seqFinish%(seqVariations+1) != 0)
-            seqFinish = (seqVariations+1) * ((seqFinish/(seqVariations+1)) +1);
+        if(seqFinish%(seqWidth+1) != 0)
+            seqFinish = (seqWidth+1) * ((seqFinish/(seqWidth+1)) +1);
     }
     else
     {
-        seqFinish -= ((seqVariations+1) * seqVariationsAdd);
-        seqFinish = (seqFinish/seqVariations) * (seqVariations + 1);
-        seqFinish += ((seqVariations+1) * seqVariationsAdd);
+        seqFinish -= ((seqWidth+1) * seqWidthAdd);
+        seqFinish = (seqFinish/seqWidth) * (seqWidth + 1);
+        seqFinish += ((seqWidth+1) * seqWidthAdd);
     }
 
-    randBool = new bool[cityamount - 1];
+    bool* randBool = new bool[cityamount - 1]; // tablica sprawdzajaca wystepowanie miast w sekwencji
+
+    std::cout << "\ns: " << seqStart << " f: " << seqFinish;
+//    if(0)
     for(int b = seqStart; b < seqFinish; b+=seqVariations)
     {
-        for int i = 0; i < cityamount - 1; i++)
+        for (int i = 0; i < cityamount - 1; i++)
             randBool[i] = false;
-        int modulo = b;
-        for(int i = 0; i < diversityLevel; i++)
+        int modulo = b;                 // podpis 'b' aby go nie zmienic
+/*        for(int i = 0; i < diversityLevel; i++)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
         {
             randPath[diversityLevel - 1 - i] = modulo % (cityamount - 1 - i);
             modulo = modulo / (cityamount - 1 - i);
         }
-        for(int i = 0; i < diversityLevel; i++)
+        for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
         {
             randPath[i] += i;
+            randBool[randPath[i]] = true;
+        }*/
+
+        for(int i = diversityLevel - 1; i >= 0; i--)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
+        {
+            randPath[i] = modulo % (cityamount - 1 - i);
+            modulo = modulo / (cityamount - 1 - i);
+        }
+        for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
+        {
+            for(int qq = 0; qq <= randPath[i]; qq++)
+                if(randBool[qq] == true)
+                    randPath[i]++;
+
             randBool[randPath[i]] = true;
         }
 
         modulo = seqVariations;
-        if((seqVariations + 1) * seqVariationsAdd >= b) modulo++;
+        if((seqVariations + 1) * seqVariationsAdd >= b) { modulo++; b++; }
+//        if(modulo == seqVariations + 1) b++;
+
+        std::cout << "b: " << b << " sV: " << seqVariations << "    ";
         for(int g = 0; g < modulo; g++)
         {
-            for()
+            int randomiser;
+            do{
+                randomiser = rand() % (cityamount - 1);
+            }while(randBool[randomiser] == true);
+            randBool[randomiser] = true;
+            randPath[diversityLevel] = randomiser;
 
-            //clock_t begin = clock();
-            int iterationWoImprovement, maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
+            for(int qq = 0; qq <= diversityLevel; qq++)
+                std::cout << " " << randPath[qq];
+            std::cout << "\n";
+
+            clock_t begin = clock();
+            int iterationWoImprovement;
+            int maxIterationWoImprovement = atoi(argv[2]);    //okreslenie maksymalnej ilosci iteracji bez poprawy, po osiagnieciu ktorej program skonczy prace, jak rowniez deklaracja iteratora
             int tabuSize;      // ilosc przejsc zapamietanych w tabu
             if(atoi(argv[1]) > (cityamount-2)*(cityamount-2) / 2)
                 { tabuSize = (cityamount-2)*(cityamount-2)/2; /*std::cout << "\nWielkosc tablicy Tabu poza zakresem, zmieniono ja na maksymalna dopuszczalna: " << tabuSize; */}
             else tabuSize = atoi(argv[1]);
             int iteration = 0;              // iterator trzymajacy informacje o tym ile razy program wykonal algorytm
 
-            int** tabuList = new int*[cityamount];             // inicjalizacja tablicy Tabu w rozmiarze x*x
-            for(int i = 1; i < cityamount; i++)
-                tabuList[i] = new int[cityamount];
-
             for(int i = 1; i < cityamount; i++)                 // pierwotne zerowanie tabu
                 for(int j = 1; j < cityamount; j++)
                     tabuList[i][j] = 0;
 
-            int* bestPath = new int[cityamount + 1];      //sciezka i waga optymalnego rozwiazania
-            int bestCost = INT_MAX;
+            int bestCost = std::numeric_limits<int>::max();
 
-            int* tempBestPath = new int[cityamount + 1];  //sciezka i waga optymalnego rozwiazania tymczasowego
-            int tempBestCost = INT_MAX;
+            int tempBestCost = std::numeric_limits<int>::max();
             tempBestPath[0] = tempBestPath[cityamount] = iterationWoImprovement = 0;
-
-            int* tempPath = new int [2];                    // miasta aktualnie badanego sasiedztwa
 
             int bestResult = std::numeric_limits<int>::max();
             int tempCost = std::numeric_limits<int>::max();
             int tempV, temp = 0;
 
-            bool* cityB = new bool[cityamount + 1];            //stworzenie tablicy mowiacej czy dana liczba juz wystapila w sekwencji
             cityB[0] = cityB[cityamount] = true;              //podpisanie pierwszego i ostatniego elementu jako juz wykonanego
             for(int i = 1; i < cityamount; i++)                 //podpisanie pozostalych jako niewykonanych
                 cityB[i] = false;
 
             for(int i = 1; i < cityamount; ++i)                // tworzenie pierwszej sekwencji, ustawienie pierwszego miasta jako poczatkowego i koncowego zostalo juz wykonane dlatego pomijamy
             {
-                if(i < randPathLength) // poczatkowa sekwencja miast zadeklarowana na wejsciu
+                if(i < diversityLevel) // poczatkowa sekwencja miast zadeklarowana na wejsciu
                 {
                     tempBestPath[i] = randPath[i-1];
-                    cityB[randPath[i-1]] = true;
+                    tempBestPath[i]++;
+                    cityB[tempBestPath[i]] = true;
                 }
                 else    //GreedyAlg
                 {
-                    tempV = INT_MAX;
+                    tempV = std::numeric_limits<int>::max();
                     for(int j = 1; j < cityamount; j++)
                         if(cityB[j] == false && distances[tempBestPath[i-1]][j] < tempV){
                             tempV = distances[tempBestPath[i-1]][j];
@@ -269,11 +304,10 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
             for (int i = 0; i < cityamount + 1; i++)
                 bestPath[i] = tempBestPath[i];
 
-
             do{
                 iteration++;
 
-                bestResult= INT_MAX;
+                bestResult= std::numeric_limits<int>::max();
                 for(int i = 1; i < cityamount-1; i++)
                     for(int j = i+1; j < cityamount; j++){
 
@@ -353,9 +387,9 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 
             }while(iterationWoImprovement < maxIterationWoImprovement);
 
-            //std::clock_t end = clock();
-            //double czas = end - begin;
-            //std::cout<<"\nCzas: " << czas / CLOCKS_PER_SEC;
+            std::clock_t end = clock();
+            double czas = end - begin;
+        //    std::cout<<"\nCzas: " << czas / CLOCKS_PER_SEC;
         /*
             std::cout << "\n" << iteration << "  " << bestCost << "\n";
             //    std::cout<<"\n\nNajkrotsza odnaleziona droga przez wszystkie miasta to:\n";           // wypisanie wyników procesu na ekran
@@ -368,16 +402,16 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         //        std::cout<<"\nPrzekazujemy wynik";
                 filewrite(bestPath, bestCost, argv, czas);
             }
-
-            for(int i = 0; i < cityamount; i++)
-                delete[] tabuList[i];
-            delete[] tabuList;
-            delete[] tempBestPath;
-            delete[] bestPath;
-            delete[] tempPath;
-            delete[] cityB;
         }
-        if(modulo == seqVariations + 1) b++;
     }
+
     delete[] randPath;
+    delete[] randBool;
+        for(int i = 0; i < cityamount; i++)
+    delete[] tabuList[i];
+    delete[] tabuList;
+    delete[] tempBestPath;
+    delete[] bestPath;
+    delete[] tempPath;
+    delete[] cityB;
 }
