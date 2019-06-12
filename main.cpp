@@ -131,6 +131,7 @@ void writetab(int** cities)                 // wypisywanie aktualnej macierzy pr
 
 void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 {
+    int checker = std::numeric_limits<int>::max();
     int** tabuList = new int*[cityamount];             // inicjalizacja tablicy Tabu w rozmiarze x*x
     for(int i = 1; i < cityamount; i++)
         tabuList[i] = new int[cityamount];
@@ -204,20 +205,16 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         int modul;
         int modulo;
         int u;
-        if((seqVariations + 1) * seqVariationsAdd >= b)
+        if((seqVariations + 1) * seqVariationsAdd >= b){
             modul = b / (seqVariations+1);
+            std::cout << " 1modul: " << modul;}
         else
         {
             modulo = (seqVariations + 1) * seqVariationsAdd;
             u = (b - modulo) / seqVariations;
-            modul = u + seqVariations;
+            modul = u + seqVariationsAdd;
+            std::cout << " 2modul: " << modul;
         }
-
-//        int modul = b / (seqVariations+1);
-//        if(modulo < seqVariationsAdd * seq)
-//            modulo = (modulo/seqVariations) * (seqVariations+1);
-//        else
-//            modulo += seqVariationsAdd;
 
 
        for(int i = diversityLevel - 1; i >= 0; i--)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
@@ -410,9 +407,12 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
             std::cout << bestPath[cityamount];
         //    std::cout<<"\nJej calkowity dystans wynosi: " << bestCost;
         */
-            if(result(bestCost, argv) == 1){
-        //        std::cout<<"\nPrzekazujemy wynik";
-                filewrite(bestPath, bestCost, argv, czas);
+            if(checker > bestCost){
+                checker = bestCost;
+                if(result(bestCost, argv) == 1){
+            //        std::cout<<"\nPrzekazujemy wynik";
+                    filewrite(bestPath, bestCost, argv, czas);
+                }
             }
         }
     }
