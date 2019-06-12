@@ -18,10 +18,10 @@ void TabuSearch(int, char**/*, int, int**/);
 int  main(int argc, char  *argv[])
 {
     if(argc != 8)
-        { std::cout << "\nPodano zle arg wejsciowe"; return 0; }
+        { /*std::cout << "\nPodano zle arg wejsciowe";*/ return 0; }
     srand(time(NULL));
     if(fileread(argv[3]) == 0)
-        std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";
+        {/*std::cout << "\n OTWIERANIE PLIKU Z MACIERZA NIE POWIODLO SIE DLA PODANYCH DANYCH WEJSCIOWYCH!!!";*/ return 0;}
     else
         TabuSearch(argc, argv);
 }
@@ -168,10 +168,10 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
     int seqFinish = seqStart + seqWidth;        // numer prawdopodobnego poczatku nastepnej sekwencji
     if(atoi(argv[5]) % atoi(argv[7]) >= atoi(argv[6])) seqFinish++;
 
-    std::cout << "s: " << seqStart << " f: " << seqFinish;
+//    std::cout << "s: " << seqStart << " f: " << seqFinish;
     if((seqWidth+1) * seqWidthAdd >= seqStart) // ustawianie prawdziwego poczatku sekwencji
     {
-        if(seqStart%(seqWidth+1) != 0) { std::cout << seqStart << " " << seqWidth;
+        if(seqStart%(seqWidth+1) != 0) {// std::cout << seqStart << " " << seqWidth;
             seqStart = (seqWidth+1) * ((seqStart/(seqWidth+1)) +1);}
     }
     else
@@ -195,7 +195,7 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 
     bool* randBool = new bool[cityamount - 1]; // tablica sprawdzajaca wystepowanie miast w sekwencji
 
-    std::cout << "\ns: " << seqStart << " f: " << seqFinish;
+//    std::cout << "\ns: " << seqStart << " f: " << seqFinish;
     for(int b = seqStart; b < seqFinish; b+=seqVariations)
     {
         for (int i = 0; i < cityamount - 1; i++)
@@ -207,13 +207,13 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         int u;
         if((seqVariations + 1) * seqVariationsAdd >= b){
             modul = b / (seqVariations+1);
-            std::cout << " 1modul: " << modul;}
+            /*std::cout << " 1modul: " << modul;*/}
         else
         {
             modulo = (seqVariations + 1) * seqVariationsAdd;
             u = (b - modulo) / seqVariations;
             modul = u + seqVariationsAdd;
-            std::cout << " 2modul: " << modul;
+//            std::cout << " 2modul: " << modul;
         }
 
 
@@ -222,11 +222,11 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
             randPath[i] = modul % (cityamount - 1 - i);
             modul = modul / (cityamount - 1 - i);
         }
-        std::cout << " RAW: ";
+/*        std::cout << " RAW: ";
         for(int qq = 0; qq <= diversityLevel - 1; qq++)
                 std::cout << " " << randPath[qq];
             std::cout << "\n";
-        for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
+*/        for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
         {
             for(int qq = 0; qq <= randPath[i]; qq++)
                 if(randBool[qq] == true)
@@ -239,7 +239,7 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         if((seqVariations + 1) * seqVariationsAdd >= b) { modulo++; b++; }
 //        if(modulo == seqVariations + 1) b++;
 
-        std::cout << "b: " << b << " sV: " << seqVariations << "    " ;
+//        std::cout << "b: " << b << " sV: " << seqVariations << "    " ;
         for(int g = 0; g < modulo; g++)
         {
             int randomiser;
@@ -249,9 +249,9 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
             randBool[randomiser] = true;
             randPath[diversityLevel] = randomiser;
 
-            for(int qq = 0; qq <= diversityLevel; qq++)
-                std::cout << " " << randPath[qq];
-            std::cout << "\n";
+//            for(int qq = 0; qq <= diversityLevel; qq++)
+//                std::cout << " " << randPath[qq];
+//            std::cout << "\n";
 
             clock_t begin = clock();
             int iterationWoImprovement;
@@ -419,9 +419,9 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
 
     delete[] randPath;
     delete[] randBool;
-        for(int i = 0; i < cityamount; i++)
-    delete[] tabuList[i];
-    delete[] tabuList;
+//    for(int i = 0; i < cityamount; i++)
+//    	delete[] tabuList[i];
+//    delete[] tabuList;
     delete[] tempBestPath;
     delete[] bestPath;
     delete[] tempPath;
