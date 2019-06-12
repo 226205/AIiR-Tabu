@@ -154,8 +154,8 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
     int seqVariations = atoi(argv[5]) / diversity;      // ilosc wariacji ostatniego poziomu wglebienia dla danej sekwencji
     int seqVariationsAdd = atoi(argv[5]) % diversity;   // ilosc wariacji z jedna sekwencja wiecej
 
-    int seqWidth = atoi(argv[5]) / atoi(argv[7]);
-    int seqWidthAdd = atoi(argv[5]) % atoi(argv[7]);
+    int seqWidth = atoi(argv[5]) / atoi(argv[7]);       // szerokosc node'a
+    int seqWidthAdd = atoi(argv[5]) % atoi(argv[7]);    // ilosc node'ow z sekwencja wiecej
 
     int seqStart = seqWidth * (atoi(argv[6])-1); // numer poczatkowej sekwencji
     if(atoi(argv[5]) % atoi(argv[7]) < atoi(argv[6]))
@@ -201,19 +201,29 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
             randBool[i] = false;
 
 
-
-        int modulo = b / seqVariations;
-        if(modulo < seqVariationsAdd)
-            modulo = (modulo/seqVariations) * (seqVariations+1);
+        int modul;
+        int modulo;
+        int u;
+        if((seqVariations + 1) * seqVariationsAdd >= b)
+            modul = b / (seqVariations+1);
         else
-            modulo += seqVariationsAdd;
+        {
+            modulo = (seqVariations + 1) * seqVariationsAdd;
+            u = (b - modulo) / seqVariations;
+            modul = u + seqVariations;
+        }
 
-        std::cout<< "\nmod: "<< modulo << " " << seqVariations ;
+//        int modul = b / (seqVariations+1);
+//        if(modulo < seqVariationsAdd * seq)
+//            modulo = (modulo/seqVariations) * (seqVariations+1);
+//        else
+//            modulo += seqVariationsAdd;
+
 
        for(int i = diversityLevel - 1; i >= 0; i--)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
         {
-            randPath[i] = modulo % (cityamount - 1 - i);
-            modulo = modulo / (cityamount - 1 - i);
+            randPath[i] = modul % (cityamount - 1 - i);
+            modul = modul / (cityamount - 1 - i);
         }
         std::cout << " RAW: ";
         for(int qq = 0; qq <= diversityLevel - 1; qq++)
