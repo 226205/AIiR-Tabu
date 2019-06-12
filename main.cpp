@@ -195,28 +195,30 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
     bool* randBool = new bool[cityamount - 1]; // tablica sprawdzajaca wystepowanie miast w sekwencji
 
     std::cout << "\ns: " << seqStart << " f: " << seqFinish;
-//    if(0)
     for(int b = seqStart; b < seqFinish; b+=seqVariations)
     {
         for (int i = 0; i < cityamount - 1; i++)
             randBool[i] = false;
-        int modulo = b;                 // podpis 'b' aby go nie zmienic
-/*        for(int i = 0; i < diversityLevel; i++)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
-        {
-            randPath[diversityLevel - 1 - i] = modulo % (cityamount - 1 - i);
-            modulo = modulo / (cityamount - 1 - i);
-        }
-        for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
-        {
-            randPath[i] += i;
-            randBool[randPath[i]] = true;
-        }*/
 
-        for(int i = diversityLevel - 1; i >= 0; i--)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
+
+
+        int modulo = b / seqVariations;
+        if(modulo < seqVariationsAdd)
+            modulo = (modulo/seqVariations) * (seqVariations+1);
+        else
+            modulo += seqVariationsAdd;
+
+        std::cout<< "\nmod: "<< modulo << " " << seqVariations ;
+
+       for(int i = diversityLevel - 1; i >= 0; i--)     // tworzenie sekwencji poczatkowej BF bez ostatniego miasta
         {
             randPath[i] = modulo % (cityamount - 1 - i);
             modulo = modulo / (cityamount - 1 - i);
         }
+        std::cout << " RAW: ";
+        for(int qq = 0; qq <= diversityLevel - 1; qq++)
+                std::cout << " " << randPath[qq];
+            std::cout << "\n";
         for(int i = 0; i < diversityLevel; i++)     // podpisywanie miast jako odwiedzonych
         {
             for(int qq = 0; qq <= randPath[i]; qq++)
@@ -230,7 +232,7 @@ void TabuSearch(int argc,char  *argv[]/*, int randPathLength, int* randPath*/)
         if((seqVariations + 1) * seqVariationsAdd >= b) { modulo++; b++; }
 //        if(modulo == seqVariations + 1) b++;
 
-        std::cout << "b: " << b << " sV: " << seqVariations << "    ";
+        std::cout << "b: " << b << " sV: " << seqVariations << "    " ;
         for(int g = 0; g < modulo; g++)
         {
             int randomiser;
